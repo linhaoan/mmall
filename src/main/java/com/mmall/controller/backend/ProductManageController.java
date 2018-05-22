@@ -170,7 +170,7 @@ public class ProductManageController {
             resultMap.put("file_path",url);
             response.addHeader("Access-Control-Allow-Headers","X-File-Name");
             return resultMap;
-        }else{
+        } else{
             resultMap.put("success",false);
             resultMap.put("msg","无权限操作");
             return resultMap;
