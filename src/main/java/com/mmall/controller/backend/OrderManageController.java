@@ -40,24 +40,24 @@ public class OrderManageController {
                                               @RequestParam(value = "pageNum",defaultValue = "1") int pageNum,
                                               @RequestParam(value = "pageSize",defaultValue = "10")int pageSize){
 
-//
-//        String loginToken = CookieUtil.readLoginToken(httpServletRequest);
-//        if(StringUtils.isEmpty(loginToken)){
-//            return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
-//        }
-//        String userJsonStr = RedisPoolUtil.get(loginToken);
-//        User user = JsonUtil.string2Obj(userJsonStr,User.class);
-//        if(user == null){
-//            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(),"用户未登录,请登录管理员");
-//
-//        }
-//        if(iUserService.checkAdminRole(user).isSuccess()){
+
+        String loginToken = CookieUtil.readLoginToken(httpServletRequest);
+        if(StringUtils.isEmpty(loginToken)){
+            return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
+        }
+        String userJsonStr = RedisPoolUtil.get(loginToken);
+        User user = JsonUtil.string2Obj(userJsonStr,User.class);
+        if(user == null){
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(),"用户未登录,请登录管理员");
+
+        }
+        if(iUserService.checkAdminRole(user).isSuccess()){
             //填充我们增加产品的业务逻辑
             return iOrderService.manageList(pageNum,pageSize);
-//            return null;
-//        }else{
-//            return ServerResponse.createByErrorMessage("无权限操作");
-//        }
+
+        }else{
+            return ServerResponse.createByErrorMessage("无权限操作");
+        }
     }
 
     @RequestMapping("detail.do")
@@ -104,8 +104,7 @@ public class OrderManageController {
         }
         if(iUserService.checkAdminRole(user).isSuccess()){
             //填充我们增加产品的业务逻辑
-//            return iOrderService.manageSearch(orderNo,pageNum,pageSize);
-            return null;
+            return iOrderService.manageSearch(orderNo,pageNum,pageSize);
         }else{
             return ServerResponse.createByErrorMessage("无权限操作");
         }
@@ -130,8 +129,8 @@ public class OrderManageController {
         }
         if(iUserService.checkAdminRole(user).isSuccess()){
             //填充我们增加产品的业务逻辑
-//            return iOrderService.manageSendGoods(orderNo);
-            return null;
+            return iOrderService.manageSendGoods(orderNo);
+
         }else{
             return ServerResponse.createByErrorMessage("无权限操作");
         }

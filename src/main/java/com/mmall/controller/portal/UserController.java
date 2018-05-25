@@ -35,10 +35,6 @@ public class UserController {
 
     /**
      * 用户登录
-     * @param username
-     * @param password
-     * @param session
-     * @return
      */
     @RequestMapping(value = "login.do",method = RequestMethod.GET)
     @ResponseBody
@@ -63,8 +59,6 @@ public class UserController {
         String loginToken = CookieUtil.readLoginToken(httpServletRequest);
         CookieUtil.delLoginToken(httpServletRequest,httpServletResponse);
         RedisPoolUtil.del(loginToken);
-
-//        session.removeAttribute(Const.CURRENT_USER);
 
         return ServerResponse.createBySuccess();
     }
@@ -143,7 +137,7 @@ public class UserController {
 
     @RequestMapping(value = "update_information.do",method = RequestMethod.POST)
     @ResponseBody
-    public ServerResponse<User> update_information(HttpServletRequest httpServletRequest,HttpSession session){
+    public ServerResponse<User> update_information(HttpServletRequest httpServletRequest){
         String loginToken = CookieUtil.readLoginToken(httpServletRequest);
         if(StringUtils.isEmpty(loginToken)){
             return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
@@ -160,8 +154,7 @@ public class UserController {
 
             response.getData().setUsername(user.getUsername());
 
-            RedisPoolUtil.del(session.getId());
-            RedisPoolUtil.setex(session.getId(), JsonUtil.obj2String(response.getData()),
+            RedisPoolUtil.setex(loginToken, JsonUtil.obj2String(response.getData()),
                     Const.RedisCacheTime.REDIS_SESSION_EXTIME);
         }
         return response;
