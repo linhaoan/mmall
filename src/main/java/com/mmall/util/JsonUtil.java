@@ -1,10 +1,13 @@
 package com.mmall.util;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.codehaus.jackson.type.JavaType;
+import org.codehaus.jackson.type.TypeReference;
 
 import java.text.SimpleDateFormat;
 
@@ -50,6 +53,29 @@ public class JsonUtil {
             return obj instanceof String ? (String)obj :  objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
         } catch (Exception e) {
             log.warn("Parse Object to String error",e);
+            return null;
+        }
+    }
+
+    public static <T> T string2Obj(String str, TypeReference<T> typeReference){
+        if(StringUtils.isEmpty(str) || typeReference == null){
+            return null;
+        }
+        try {
+            return (T)(typeReference.getType().equals(String.class)? str : objectMapper.readValue(str,typeReference));
+        } catch (Exception e) {
+            log.warn("Parse String to Object error",e);
+            return null;
+        }
+    }
+
+
+    public static <T> T string2Obj(String str,Class<?> collectionClass,Class<?>... elementClasses){
+        JavaType javaType = objectMapper.getTypeFactory().constructParametricType(collectionClass,elementClasses);
+        try {
+            return objectMapper.readValue(str,javaType);
+        } catch (Exception e) {
+            log.warn("Parse String to Object error",e);
             return null;
         }
     }

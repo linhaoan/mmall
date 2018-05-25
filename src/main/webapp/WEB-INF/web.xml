@@ -23,6 +23,20 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
+    <!-- session重置 filter-->
+
+    <filter>
+        <filter-name>SessionExpireFilter</filter-name>
+        <filter-class>com.mmall.controller.Common.SessionExpireFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>SessionExpireFilter</filter-name>
+        <url-pattern>*.do</url-pattern>
+    </filter-mapping>
+
+
+
 
     <listener>
         <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
