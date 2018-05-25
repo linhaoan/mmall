@@ -57,6 +57,25 @@ public class JsonUtil {
         }
     }
 
+
+
+
+
+    public static <T> T string2Obj(String str,Class<T> clazz){
+        if(StringUtils.isEmpty(str) || clazz == null){
+            return null;
+        }
+
+        try {
+            return clazz.equals(String.class)? (T)str : objectMapper.readValue(str,clazz);
+        } catch (Exception e) {
+            log.warn("Parse String to Object error",e);
+            return null;
+        }
+    }
+
+
+
     public static <T> T string2Obj(String str, TypeReference<T> typeReference){
         if(StringUtils.isEmpty(str) || typeReference == null){
             return null;
@@ -79,4 +98,5 @@ public class JsonUtil {
             return null;
         }
     }
+
 }

@@ -6,7 +6,7 @@ import com.mmall.pojo.User;
 import com.mmall.service.IUserService;
 import com.mmall.util.CookieUtil;
 import com.mmall.util.JsonUtil;
-import com.mmall.util.RedisPoolUtil;
+import com.mmall.util.RedisShardedPoolUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -41,7 +41,7 @@ public class UserManageController {
                 //说明登录的是管理员
                 CookieUtil.writeLoginToken(httpServletResponse,session.getId());
 
-                RedisPoolUtil.setex(session.getId(), JsonUtil.obj2String(response.getData()),
+                RedisShardedPoolUtil.setex(session.getId(), JsonUtil.obj2String(response.getData()),
                         Const.RedisCacheTime.REDIS_SESSION_EXTIME);
 
                 return response;
