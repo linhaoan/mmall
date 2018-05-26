@@ -40,6 +40,9 @@ public class UserController {
     @ResponseBody
     public ServerResponse<User> login(String username, String password, HttpSession session,
                                       HttpServletResponse httpServletResponse){
+        if(true) {
+            throw  new RuntimeException("测试错误");
+        }
         ServerResponse<User> response = iUserService.login(username,password);
         if(response.isSuccess()){
             log.info("session.getId()={}",session.getId());
