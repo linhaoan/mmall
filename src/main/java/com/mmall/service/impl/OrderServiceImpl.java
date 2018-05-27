@@ -15,7 +15,9 @@ import com.mmall.vo.OrderItemVo;
 import com.mmall.vo.OrderProductVo;
 import com.mmall.vo.OrderVo;
 import com.mmall.vo.ShippingVo;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,24 +33,8 @@ import java.util.Random;
  * Created by linhao
  */
 @Service("iOrderService")
+@Slf4j
 public class OrderServiceImpl implements IOrderService {
-
-
-//    private static  AlipayTradeService tradeService;
-//    static {
-//
-//        /** 一定要在创建AlipayTradeService之前调用Configs.init()设置默认参数
-//         *  Configs会读取classpath下的zfbinfo.properties文件配置信息，如果找不到该文件则确认该文件是否在classpath目录
-//         */
-//        Configs.init("zfbinfo.properties");
-//
-//        /** 使用Configs提供的默认参数
-//         *  AlipayTradeService可以使用单例或者为静态成员对象，不需要反复new
-//         */
-//        tradeService = new AlipayTradeServiceImpl.ClientBuilder().build();
-//    }
-
-    private static final Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
 
     @Autowired
     private OrderMapper orderMapper;
@@ -63,6 +49,19 @@ public class OrderServiceImpl implements IOrderService {
     @Autowired
     private ShippingMapper shippingMapper;
 
+//    private static  AlipayTradeService tradeService;
+//    static {
+//
+//        /** 一定要在创建AlipayTradeService之前调用Configs.init()设置默认参数
+//         *  Configs会读取classpath下的zfbinfo.properties文件配置信息，如果找不到该文件则确认该文件是否在classpath目录
+//         */
+//        Configs.init("zfbinfo.properties");
+//
+//        /** 使用Configs提供的默认参数
+//         *  AlipayTradeService可以使用单例或者为静态成员对象，不需要反复new
+//         */
+//        tradeService = new AlipayTradeServiceImpl.ClientBuilder().build();
+//    }
 
     public  ServerResponse createOrder(Integer userId,Integer shippingId){
 
@@ -158,8 +157,6 @@ public class OrderServiceImpl implements IOrderService {
         return orderItemVo;
     }
 
-
-
     private ShippingVo assembleShippingVo(Shipping shipping){
         ShippingVo shippingVo = new ShippingVo();
         shippingVo.setReceiverName(shipping.getReceiverName());
@@ -178,8 +175,6 @@ public class OrderServiceImpl implements IOrderService {
             cartMapper.deleteByPrimaryKey(cart.getId());
         }
     }
-
-
 
     private void reduceProductStock(List<OrderItem> orderItemList){
         for(OrderItem orderItem : orderItemList){
@@ -210,13 +205,10 @@ public class OrderServiceImpl implements IOrderService {
         return null;
     }
 
-
     private long generateOrderNo(){
         long currentTime =System.currentTimeMillis();
         return currentTime+new Random().nextInt(100);
     }
-
-
 
     private BigDecimal getOrderTotalPrice(List<OrderItem> orderItemList){
         BigDecimal payment = new BigDecimal("0");
@@ -257,10 +249,6 @@ public class OrderServiceImpl implements IOrderService {
         return ServerResponse.createBySuccess(orderItemList);
     }
 
-
-
-
-
     public ServerResponse<String> cancel(Integer userId,Long orderNo){
         Order order  = orderMapper.selectByUserIdAndOrderNo(userId,orderNo);
         if(order == null){
@@ -279,9 +267,6 @@ public class OrderServiceImpl implements IOrderService {
         }
         return ServerResponse.createByError();
     }
-
-
-
 
     public ServerResponse getOrderCartProduct(Integer userId){
         OrderProductVo orderProductVo = new OrderProductVo();
@@ -318,7 +303,6 @@ public class OrderServiceImpl implements IOrderService {
         return  ServerResponse.createByErrorMessage("没有找到该订单");
     }
 
-
     public ServerResponse<PageInfo> getOrderList(Integer userId,int pageNum,int pageSize){
         PageHelper.startPage(pageNum,pageSize);
         List<Order> orderList = orderMapper.selectByUserId(userId);
@@ -327,7 +311,6 @@ public class OrderServiceImpl implements IOrderService {
         pageResult.setList(orderVoList);
         return ServerResponse.createBySuccess(pageResult);
     }
-
 
     private List<OrderVo> assembleOrderVoList(List<Order> orderList,Integer userId){
         List<OrderVo> orderVoList = Lists.newArrayList();
@@ -344,27 +327,6 @@ public class OrderServiceImpl implements IOrderService {
         }
         return orderVoList;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //    public ServerResponse pay(Long orderNo,Integer userId,String path){
 //        Map<String ,String> resultMap = Maps.newHashMap();
@@ -498,7 +460,6 @@ public class OrderServiceImpl implements IOrderService {
 //        }
 //    }
 
-
     public ServerResponse aliCallback(Map<String,String> params){
         Long orderNo = Long.parseLong(params.get("out_trade_no"));
         String tradeNo = params.get("trade_no");
@@ -543,19 +504,6 @@ public class OrderServiceImpl implements IOrderService {
         return ServerResponse.createByError();
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     //backend
 
     public ServerResponse<PageInfo> manageList(int pageNum,int pageSize){
@@ -566,7 +514,6 @@ public class OrderServiceImpl implements IOrderService {
         pageResult.setList(orderVoList);
         return ServerResponse.createBySuccess(pageResult);
     }
-
 
     public ServerResponse<OrderVo> manageDetail(Long orderNo){
         Order order = orderMapper.selectByOrderNo(orderNo);
@@ -608,28 +555,30 @@ public class OrderServiceImpl implements IOrderService {
         return ServerResponse.createByErrorMessage("订单不存在");
     }
 
+    @Override
+    public void closeOrder(int hour) {
+        Date closeDateTime = DateUtils.addHours(new Date(),-hour);
+        List<Order> orderList = orderMapper.selectOrderStatusByCreateTime(Const.OrderStatusEnum.NO_PAY.getCode(),
+                DateTimeUtil.dateToStr(closeDateTime));
 
+        for(Order order : orderList){
+            List<OrderItem> orderItemList = orderItemMapper.getByOrderNo(order.getOrderNo());
+            for(OrderItem orderItem : orderItemList){
 
+                //一定要用主键where条件，防止锁表。同时必须是支持MySQL的InnoDB。
+                Integer stock = productMapper.selectStockByProductId(orderItem.getProductId());
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                //考虑到已生成的订单里的商品，被删除的情况
+                if(stock == null){
+                    continue;
+                }
+                Product product = new Product();
+                product.setId(orderItem.getProductId());
+                product.setStock(stock+orderItem.getQuantity());
+                productMapper.updateByPrimaryKeySelective(product);
+            }
+            orderMapper.closeOrderByOrderId(order.getId());
+            log.info("关闭订单OrderNo：{}",order.getOrderNo());
+        }
+    }
 }

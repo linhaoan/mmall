@@ -77,13 +77,10 @@ public class CartServiceImpl implements ICartService {
         return this.list(userId);
     }
 
-
     public ServerResponse<CartVo> list (Integer userId){
         CartVo cartVo = this.getCartVoLimit(userId);
         return ServerResponse.createBySuccess(cartVo);
     }
-
-
 
     public ServerResponse<CartVo> selectOrUnSelect (Integer userId,Integer productId,Integer checked){
         cartMapper.checkedOrUncheckedProduct(userId,productId,checked);
@@ -162,30 +159,5 @@ public class CartServiceImpl implements ICartService {
         return cartMapper.selectCartProductCheckedStatusByUserId(userId) == 0;
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
